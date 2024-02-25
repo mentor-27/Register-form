@@ -1,0 +1,30 @@
+.formInput {
+	padding: 8px 12px;
+	margin-bottom: 8px;
+	width: 100%;
+	border: 1px solid #fff4;
+	border-radius: 8px;
+	background: #0002;
+	box-shadow: 0 0 16px #0003 inset;
+	outline: none;
+	color: #fff;
+	font-size: 1.3rem;
+	transition: 0.2s;
+}
+
+.formInput:not(:last-of-type) {
+	margin-bottom: 24px;
+}
+
+.formInput:focus,
+.formInput:valid {
+	border: 1px solid var(--col2);
+}
+
+.formInput:invalid {
+	border: 1px solid var(--col1);
+}
+
+.formInput::placeholder {
+	color: #0002;
+}
