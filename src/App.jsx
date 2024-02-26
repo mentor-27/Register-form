@@ -1,4 +1,7 @@
-import { useStore } from '../src/hooks/useStore';
+import { useForm } from 'react-hook-form';
+import * as yup from 'yup';
+import { yupResolver } from '@hookform/resolvers/yup';
+// import { useStore } from '../src/hooks/useStore';
 import { Input } from './components/Input/Input';
 import { useState, useRef } from 'react';
 import styles from './App.module.css';
@@ -7,106 +10,86 @@ const sendFormData = formData => {
 	console.log(formData);
 };
 
+const formSchema = yup.object({
+	email: yup.string().matches(/^[\w\.-]+@{1}\w+\.\w+$/, 'Некорректный email.'),
+	password: yup
+		.string()
+		.matches(
+			/^\w+$/,
+			'Некорректный пароль. Разрешены латинские символы, цифры, нижнее подчёркивание.',
+		)
+		.min(8, 'Некорректный пароль. Длина пароля должна быть не менее 8 символов.'),
+});
+
 export const App = () => {
-	const { store, updateStore, resetStore } = useStore();
-	const [inputErrors, setInputError] = useState([]);
-	const emailInput = useRef(null);
-	const passwordInput = useRef(null);
-	const passAgainInput = useRef(null);
-	const submitButton = useRef(null);
+	const [inputErrors, setInputError] = useState(null);
 
-	const resetForm = () => {
-		resetStore();
-		passAgainInput.current.value = '';
-	};
-
-	const onSubmit = e => {
-		e.preventDefault();
-		if (
-			!inputErrors.length &&
-			emailInput.current.value !== '' &&
-			passwordInput.current.value !== '' &&
-			passAgainInput.current.value !== ''
-		) {
-			sendFormData(store);
-			resetForm();
-		}
-	};
-
-	const onChange = e => {
-		updateStore(e.target.name, e.target.value);
-		if (
-			e.target.name === 'passAgain' &&
-			passAgainInput.current.value === store.password
-		) {
-			submitButton.current.focus();
-		}
-	};
+	const {
+		register,
+		handleSubmit,
+		formState: { errors },
+		reset,
+	} = useForm({
+		mode: 'all',
+		defaultValues: {
+			email: '',
+			password: '',
+		},
+		resolver: yupResolver(formSchema),
+	});
 
 	const onBlur = () => {
-		let errors = [];
+		const newArr = [];
+		Object.keys(errors).forEach(key => {
+			newArr.push(errors[key]?.message);
+			setInputError(newArr);
+		});
+	};
 
-		if (
-			emailInput.current.value !== '' &&
-			!/^[\w-]+@{1}[\w-]+\.[\w]+$/.test(emailInput.current.value)
-		) {
-			errors.push('Некорректный email.');
+	const onSubmit = formData => {
+		if (formData.password === formData.passAgain) {
+			sendFormData(formData);
 		}
-		if (
-			passwordInput.current.value !== '' &&
-			!/^[\w]{8,}$/.test(passwordInput.current.value)
-		) {
-			errors.push(
-				'Некорректный пароль. Разрешены латинские символы, цифры, нижнее подчёркивание. Длина пароля должна быть не менее 8 символов',
-			);
-		}
-		if (passAgainInput.current.value !== store.password) {
-			errors.push('Пароли не совпадают');
-		}
-
-		setInputError(errors);
 	};
 
 	return (
-		<form className={styles.app} onSubmit={onSubmit}>
-			<button className={styles.clearButton} type="button" onClick={resetForm}></button>
+		<form className={styles.app} onSubmit={handleSubmit(onSubmit)}>
+			<button
+				className={styles.clearButton}
+				type="button"
+				onClick={() => reset()}
+			></button>
 			<h1 className={styles.formCaption}>Регистрация</h1>
 			<div className={styles.inputContainer}>
 				<ul className={styles.errorLabel}>
-					{inputErrors.map((error, i) => (
-						<li key={i}>{error}</li>
-					))}
+					{inputErrors && inputErrors.map((error, i) => <li key={i}>{error}</li>)}
 				</ul>
 				<Input
-					inputRef={emailInput}
 					type={'email'}
 					name={'email'}
-					value={store.email}
 					placeholder={'Email'}
-					onChange={onChange}
+					regObj={register('email')}
 					onBlur={onBlur}
+					// pattern={'^[\\w-]+@{1}[\\w]+\\.\\w+$'}
 				/>
 				<Input
-					inputRef={passwordInput}
 					type={'password'}
 					name={'password'}
-					value={store.password}
 					placeholder={'Пароль'}
-					pattern={'[a-zA-Z0-9]+'}
-					onChange={onChange}
+					regObj={register('password')}
 					onBlur={onBlur}
+					// pattern={'\\w{8,}'}
 				/>
 				<Input
-					inputRef={passAgainInput}
 					type={'password'}
 					name={'passAgain'}
 					placeholder={'Пароль ещё раз'}
-					pattern={'[a-zA-Z0-9]+'}
-					onChange={onChange}
+					regObj={register('passAgain')}
 					onBlur={onBlur}
+					// pattern={'\\w{8,}'}
 				/>
 			</div>
-			<button className={styles.submitButton} ref={submitButton} type={'submit'}>
+			<button className={styles.submitButton} type={'submit'}>
 				Зарегистрироваться
 			</button>
 		</form>
