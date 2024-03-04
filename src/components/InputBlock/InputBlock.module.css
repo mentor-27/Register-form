@@ -1,7 +1,15 @@
+.formInputBlock {
+	display: flex;
+	flex-direction: column;
+	justify-content: flex-end;
+	gap: 2px;
+	height: 80px;
+	width: 300px;
+	margin-bottom: 8px;
+}
+
 .formInput {
 	padding: 8px 12px;
-	margin-bottom: 8px;
-	width: 100%;
 	border: 1px solid #fff4;
 	border-radius: 8px;
 	background: #0002;
@@ -27,4 +35,13 @@
 
 .formInput::placeholder {
 	color: #0002;
+}
+
+.formInputLabel {
+	padding: 0;
+	display: block;
+	min-height: 21px;
+	height: fit-content;
+	color: #fcc;
+	font-size: 11px;
 }
